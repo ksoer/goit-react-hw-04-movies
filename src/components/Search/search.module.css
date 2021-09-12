@@ -1,0 +1,10 @@
+.menu {
+    display: flex;
+    list-style: none;
+    padding: 20px;
+    border-bottom: 1px solid black;
+    margin: 0;
+  }
+  .menuItem {
+    padding: 10px;
+  }
