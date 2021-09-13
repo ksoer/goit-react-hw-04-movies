@@ -1,51 +1,104 @@
-import React, { Component } from 'react';
-import Axios from 'axios';
-import { Link } from 'react-router-dom';
+import Button from '../Button/Button';
+import ListMovie from '../ListMovies/ListMovies';
+import MyLoader from '../Loader/Loader';
 import SearchForm from '../Search/SearchForm';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { fetchQueryMovie } from '../../Services/Api';
+/* eslint react/prop-types: 1 */
 
 class MoviesPage extends Component {
-  state = {
-    movies: [],
-    query: '',
+  static propTypes = {
+    history: PropTypes.object,
+    location: PropTypes.object,
   };
+
+  state = {
+    articles: [],
+    page: 1,
+    loading: false,
+    toResult: false,
+  };
+
   componentDidMount() {
-    if (this.props.location.query) {
-      Axios.get(
-        ` https://api.themoviedb.org/3/search/movie?api_key=5d8d0589fed8a27c05c2480c978a9bf4&language=en-US&query=${this.props.location.query}&page=1&include_adult=false`,
-      ).then(response => {
-        this.setState({ movies: response.data.results });
-      });
+    if (this.props.location.search) {
+      this.getListMovie();
     }
   }
-  onChangeQuery = query => {
-    Axios.get(
-      ` https://api.themoviedb.org/3/search/movie?api_key=5d8d0589fed8a27c05c2480c978a9bf4&language=en-US&query=${query}&page=1&include_adult=false`,
-    ).then(response => {
-      this.setState({ movies: response.data.results, query: query });
+
+  componentDidUpdate(prevProps, prevState) {
+    const nextQuery = this.props.location.search;
+    const prevQuery = prevProps.location.search;
+    if (nextQuery !== prevQuery) {
+      this.setState({ toResult: false });
+      this.getListMovie();
+    }
+    console.log(nextQuery, prevQuery);
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
     });
+  }
+
+  onSearch = query => {
+    this.setState({ articles: [], page: 1 });
+    this.getShowTitle(query);
+  };
+
+  getListMovie = () => {
+    const { page, articles } = this.state;
+    const { search } = this.props.location;
+    
+    const queryModify = search.slice(1);
+    console.log(queryModify);
+    
+    this.toggleLoading();
+    fetchQueryMovie(queryModify, page)
+      .then(response => {
+        if (response.data.results.length === 0) {
+          this.setState({ toResult: true });
+          return;
+        }
+        this.setState({
+          articles: [...articles, ...response.data.results],
+          page: page + 1,
+        });
+      })
+      .catch(error => this.setState({ error }))
+      .finally(
+      
+        this.toggleLoading,
+      );
+  };
+
+  getShowTitle = query => {
+    const { history, location } = this.props;
+    history.push({ pathname: location.pathname, search: `query=${query}` });
+  };
+
+  getLoadMore = () => {
+    this.getListMovie();
+  };
+
+  toggleLoading = () => {
+    this.setState(({ loading }) => ({
+      loading: !loading,
+    }));
   };
 
   render() {
+    const { loading, articles, toResult } = this.state;
     return (
       <>
-        <SearchForm onSubmit={this.onChangeQuery} />
-        <ul>
-          {this.state.movies.map(movie => (
-            <li key={movie.id}>
-              <Link
-                to={{
-                  pathname: `/movies/${movie.id}`,
-                  state: {
-                    from: this.props.location.pathname,
-                    query: this.state.query,
-                  },
-                }}
-              >
-                {movie.title || movie.original_name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <SearchForm onSubmitForm={this.onSearch} />
+        {loading && <MyLoader onLoad={loading} />}
+        {toResult && <p>No result</p>}
+        {articles.length > 0 && <ListMovie list={articles} />}
+        {articles.length > 0 && (
+          <Button onClick={this.getLoadMore} aria-label="Load more">
+            Load more
+          </Button>
+        )}
       </>
     );
   }

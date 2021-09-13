@@ -1,0 +1,11 @@
+.list {
+    margin-top: 12px;
+  }
+  .name {
+    font-size: 20px;
+  }
+  .role {
+    font-style: italic;
+    font-size: 16px;
+    color: var(--dark-color);
+  }

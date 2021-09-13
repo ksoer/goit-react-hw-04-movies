@@ -1,29 +1,41 @@
-import Axios from 'axios';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { fetchReviewsMovie } from '../../Services/Api';
+import style from './Reviews.module.css';
+/* eslint react/prop-types: 1 */
 
 class Reviews extends Component {
+  static propTypes = { match: PropTypes.object };
   state = {
-    autors: [],
+    review: [],
   };
-
   async componentDidMount() {
-    const { movieId } = this.props.match.params;
-    const response = await Axios.get(
-      `https://api.themoviedb.org/3/movie/${movieId}/reviews?api_key=5d8d0589fed8a27c05c2480c978a9bf4&language=en-US&page=1`,
-    );
-    this.setState({ autors: response.data.results });
+    const propId = await this.props.match.params.movieId;
+    const response = await fetchReviewsMovie(propId);
+    this.setState({ review: response.data.results });
   }
   render() {
+    const { review } = this.state;
     return (
-      <ul>
-        {this.state.autors.map(autor => (
-          <li key={autor.id}>
-            <p>{autor.content}</p>
-            <p>{autor.autor}</p>
-          </li>
-        ))}
-      </ul>
+      <>
+        <h2>Reviews</h2>
+        {review.length === 0 ? (
+          <p className={style.content}>
+            'We don't have any reviews for this movie'
+          </p>
+        ) : (
+          <ul className={style.list}>
+            {review.map(rew => (
+              <li key={rew.id}>
+                <p className={style.name}>{rew.author}</p>
+                <p className={style.content}>{rew.content}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </>
     );
   }
 }
+
 export default Reviews;

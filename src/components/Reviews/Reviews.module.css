@@ -1,0 +1,11 @@
+.list {
+    margin-top: 15px;
+  }
+  .name {
+    font-size: 20px;
+  }
+  .content {
+    font-style: italic;
+    font-size: 16px;
+    color: var(--dark-color);
+  }

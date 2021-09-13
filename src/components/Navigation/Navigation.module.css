@@ -1,0 +1,22 @@
+  
+.Nav {
+  top: 0;
+  left: 0;
+  /* position: sticky; */
+  /* z-index: 1100; */
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  min-height: 64px;
+  padding-right: 24px;
+  padding-left: 24px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  list-style: none;
+  /* color: #fff; */
+  
+}
+
+.Item + .Item {
+  margin-left: 15px;
+}
